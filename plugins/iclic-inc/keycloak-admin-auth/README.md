@@ -16,6 +16,17 @@ Replaces `cp-admin`/`cp-auth` local authentication with a Keycloak OpenID Connec
 - `client_id`
 - `client_secret`
 
+## Environment fallback (optional)
+
+If plugin settings are empty, the plugin can read:
+
+- `KEYCLOAK_ADMIN_AUTH_ENABLED` (`1` to enable)
+- `KEYCLOAK_OIDC_ISSUER_URL`
+- `KEYCLOAK_CLIENT_ID`
+- `KEYCLOAK_CLIENT_SECRET`
+- `KEYCLOAK_ALLOWED_GROUPS`
+- `KEYCLOAK_POST_LOGOUT_REDIRECT_URL`
+
 ## Notes
 
 - Keep at least one local superadmin until Keycloak settings are verified.

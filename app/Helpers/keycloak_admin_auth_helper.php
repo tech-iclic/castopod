@@ -7,7 +7,6 @@ use CodeIgniter\Shield\Entities\User;
 use Modules\Admin\Config\Admin;
 use Modules\Auth\Config\Auth as AuthConfig;
 use Modules\Auth\Models\UserModel;
-use Throwable;
 
 if (! function_exists('keycloak_admin_auth_plugin_key')) {
     function keycloak_admin_auth_plugin_key(): string
@@ -30,12 +29,84 @@ if (! function_exists('keycloak_admin_auth_id_token_session_key')) {
     }
 }
 
+if (! function_exists('keycloak_admin_auth_env_fallback_keys')) {
+    /**
+     * @return array<string, list<string>>
+     */
+    function keycloak_admin_auth_env_fallback_keys(): array
+    {
+        return [
+            'issuer_url'               => ['KEYCLOAK_OIDC_ISSUER_URL', 'KEYCLOAK_ISSUER_URL'],
+            'client_id'                => ['KEYCLOAK_CLIENT_ID'],
+            'client_secret'            => ['KEYCLOAK_CLIENT_SECRET'],
+            'scopes'                   => ['KEYCLOAK_SCOPES'],
+            'allowed_roles'            => ['KEYCLOAK_ALLOWED_GROUPS', 'KEYCLOAK_ALLOWED_ROLES'],
+            'default_group'            => ['KEYCLOAK_DEFAULT_GROUP'],
+            'superadmin_roles'         => ['KEYCLOAK_SUPERADMIN_ROLES'],
+            'manager_roles'            => ['KEYCLOAK_MANAGER_ROLES'],
+            'podcaster_roles'          => ['KEYCLOAK_PODCASTER_ROLES'],
+            'post_logout_redirect_url' => ['KEYCLOAK_POST_LOGOUT_REDIRECT_URL'],
+            'auto_create_users'        => ['KEYCLOAK_AUTO_CREATE_USERS'],
+            'sync_username'            => ['KEYCLOAK_SYNC_USERNAME'],
+            'active'                   => ['KEYCLOAK_ADMIN_AUTH_ENABLED'],
+        ];
+    }
+}
+
+if (! function_exists('keycloak_admin_auth_get_env_fallback_value')) {
+    function keycloak_admin_auth_get_env_fallback_value(string $name): mixed
+    {
+        $fallbackKeys = keycloak_admin_auth_env_fallback_keys()[$name] ?? [];
+
+        foreach ($fallbackKeys as $envKey) {
+            $envValue = env($envKey);
+            if ($envValue === null || $envValue === false) {
+                continue;
+            }
+
+            if (is_string($envValue) && trim($envValue) === '') {
+                continue;
+            }
+
+            return $envValue;
+        }
+
+        return null;
+    }
+}
+
 if (! function_exists('keycloak_admin_auth_is_enabled')) {
     function keycloak_admin_auth_is_enabled(): bool
     {
         helper('plugins');
 
-        return (bool) get_plugin_setting(keycloak_admin_auth_plugin_key(), 'active');
+        $envFallback = keycloak_admin_auth_get_env_fallback_value('active');
+        if (is_bool($envFallback)) {
+            return $envFallback;
+        }
+
+        if (is_numeric($envFallback)) {
+            return (int) $envFallback === 1;
+        }
+
+        if (is_string($envFallback)) {
+            return in_array(strtolower(trim($envFallback)), ['1', 'true', 'yes', 'on'], true);
+        }
+
+        $isActive = get_plugin_setting(keycloak_admin_auth_plugin_key(), 'active');
+        if (is_bool($isActive)) {
+            return $isActive;
+        }
+
+        if (is_numeric($isActive)) {
+            return (int) $isActive === 1;
+        }
+
+        if (is_string($isActive) && trim($isActive) !== '') {
+            return in_array(strtolower(trim($isActive)), ['1', 'true', 'yes', 'on'], true);
+        }
+
+        return false;
     }
 }
 
@@ -51,6 +122,15 @@ if (! function_exists('keycloak_admin_auth_get_setting_string')) {
 
         if (is_numeric($value)) {
             return trim((string) $value);
+        }
+
+        $envValue = keycloak_admin_auth_get_env_fallback_value($name);
+        if (is_string($envValue)) {
+            return trim($envValue);
+        }
+
+        if (is_numeric($envValue)) {
+            return trim((string) $envValue);
         }
 
         return $default;
@@ -74,6 +154,26 @@ if (! function_exists('keycloak_admin_auth_get_setting_bool')) {
 
         if (is_string($value)) {
             $normalized = strtolower(trim($value));
+            if (in_array($normalized, ['1', 'true', 'yes', 'on'], true)) {
+                return true;
+            }
+
+            if (in_array($normalized, ['0', 'false', 'no', 'off'], true)) {
+                return false;
+            }
+        }
+
+        $envValue = keycloak_admin_auth_get_env_fallback_value($name);
+        if (is_bool($envValue)) {
+            return $envValue;
+        }
+
+        if (is_numeric($envValue)) {
+            return (int) $envValue === 1;
+        }
+
+        if (is_string($envValue)) {
+            $normalized = strtolower(trim($envValue));
             if (in_array($normalized, ['1', 'true', 'yes', 'on'], true)) {
                 return true;
             }
