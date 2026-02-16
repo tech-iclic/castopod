@@ -1,0 +1,25 @@
+{
+  "name": "iclic-inc/public-site-privacy",
+  "version": "0.1.0",
+  "minCastopodVersion": "2.0.0-next.3",
+  "description": "Hide public homepage and podcast pages, and redirect visitors to the admin gateway.",
+  "license": "AGPL-3.0-or-later",
+  "keywords": ["admin", "privacy", "access-control"],
+  "hooks": [],
+  "settings": {
+    "general": {
+      "redirect_home_to_admin": {
+        "type": "checkbox",
+        "label": "Redirect homepage (/) to admin",
+        "hint": "When enabled, visiting / redirects to the admin gateway.",
+        "optional": true
+      },
+      "block_public_podcast_pages": {
+        "type": "checkbox",
+        "label": "Block public @podcast pages",
+        "hint": "When enabled, all public @handle routes (for example @myshow, @myshow/about, @myshow/episodes) redirect to admin.",
+        "optional": true
+      }
+    }
+  }
+}

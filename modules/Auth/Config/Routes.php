@@ -53,7 +53,7 @@ $routes->group(
                 $routes->post('edit', 'UserController::editAction/$1', [
                     'filter' => 'permission:users.manage',
                 ]);
-                $routes->get('delete', 'UserController::delete/$1', [
+                $routes->get('delete', 'UserController::deleteView/$1', [
                     'as'     => 'user-delete',
                     'filter' => 'permission:users.manage',
                 ]);

@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "e8c2a40051cf8753a69af8be525f7c8f",
+  "content-hash": "652fdc052ee279f4fc517491cab622ee",
   "packages": [
     {
       "name": "adaures/castopod-plugins-manager",
@@ -2104,16 +2104,16 @@
     },
     {
       "name": "michalsn/codeigniter4-uuid",
-      "version": "v1.3.0",
+      "version": "v1.3.1",
       "source": {
         "type": "git",
         "url": "https://github.com/michalsn/codeigniter4-uuid.git",
-        "reference": "16408c77bcaef920cb93a822018390f8a5674424"
+        "reference": "31457ec91f54e3c981762d9f06e87e417869c380"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/michalsn/codeigniter4-uuid/zipball/16408c77bcaef920cb93a822018390f8a5674424",
-        "reference": "16408c77bcaef920cb93a822018390f8a5674424",
+        "url": "https://api.github.com/repos/michalsn/codeigniter4-uuid/zipball/31457ec91f54e3c981762d9f06e87e417869c380",
+        "reference": "31457ec91f54e3c981762d9f06e87e417869c380",
         "shasum": ""
       },
       "require": {
@@ -2152,9 +2152,9 @@
       ],
       "support": {
         "issues": "https://github.com/michalsn/codeigniter4-uuid/issues",
-        "source": "https://github.com/michalsn/codeigniter4-uuid/tree/v1.3.0"
+        "source": "https://github.com/michalsn/codeigniter4-uuid/tree/v1.3.1"
       },
-      "time": "2025-06-13T05:40:55+00:00"
+      "time": "2025-10-16T10:20:23+00:00"
     },
     {
       "name": "mpratt/embera",
@@ -8446,5 +8446,5 @@
     "php": "^8.4"
   },
   "platform-dev": {},
-  "plugin-api-version": "2.6.0"
+  "plugin-api-version": "2.9.0"
 }

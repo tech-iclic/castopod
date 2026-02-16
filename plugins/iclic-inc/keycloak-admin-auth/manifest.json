@@ -1,0 +1,82 @@
+{
+  "name": "iclic-inc/keycloak-admin-auth",
+  "version": "0.1.0",
+  "minCastopodVersion": "2.0.0-next.3",
+  "description": "Replace cp-admin authentication with Keycloak (OIDC).",
+  "license": "AGPL-3.0-or-later",
+  "keywords": ["admin", "auth", "keycloak", "sso"],
+  "hooks": [],
+  "settings": {
+    "general": {
+      "issuer_url": {
+        "type": "url",
+        "label": "Keycloak issuer URL",
+        "hint": "Example: https://auth.example.com/realms/MyRealm"
+      },
+      "client_id": {
+        "type": "text",
+        "label": "OIDC client ID"
+      },
+      "client_secret": {
+        "type": "text",
+        "label": "OIDC client secret"
+      },
+      "scopes": {
+        "type": "text",
+        "label": "Scopes",
+        "hint": "Space-separated scopes.",
+        "defaultValue": "openid profile email",
+        "optional": true
+      },
+      "allowed_roles": {
+        "type": "textarea",
+        "label": "Allowed roles (optional)",
+        "hint": "Comma, semicolon, space, or line-separated. Leave empty to allow any authenticated Keycloak user.",
+        "optional": true
+      },
+      "default_group": {
+        "type": "text",
+        "label": "Default Castopod role",
+        "hint": "Used when no Keycloak role mapping matches (example: manager).",
+        "optional": true
+      },
+      "superadmin_roles": {
+        "type": "text",
+        "label": "Roles mapped to superadmin",
+        "defaultValue": "ROLE_SUPERADMIN, ROLE_ADMIN, superadmin, admin",
+        "optional": true
+      },
+      "manager_roles": {
+        "type": "text",
+        "label": "Roles mapped to manager",
+        "defaultValue": "ROLE_MANAGER, manager",
+        "optional": true
+      },
+      "podcaster_roles": {
+        "type": "text",
+        "label": "Roles mapped to podcaster",
+        "defaultValue": "ROLE_PODCASTER, podcaster",
+        "optional": true
+      },
+      "auto_create_users": {
+        "type": "checkbox",
+        "label": "Auto-create users",
+        "hint": "Create a Castopod user automatically when the Keycloak identity does not exist yet.",
+        "defaultValue": true,
+        "optional": true
+      },
+      "sync_username": {
+        "type": "checkbox",
+        "label": "Sync username from Keycloak",
+        "defaultValue": true,
+        "optional": true
+      },
+      "post_logout_redirect_url": {
+        "type": "url",
+        "label": "Post logout redirect URL",
+        "hint": "Optional URL where Keycloak should redirect users after logout.",
+        "optional": true
+      }
+    }
+  }
+}

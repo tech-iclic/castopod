@@ -94,6 +94,9 @@ foreach (plugins()->getPluginsWithPodcastSettings() as $plugin) {
     $podcastNavigation['plugins']['items-permissions'][$route] = 'edit';
 }
 
+helper('podcast_menu_disabler');
+$podcastNavigation = podcast_menu_disabler_filter_navigation($podcastNavigation);
+
 ?>
 
 <div class="flex gap-2 px-2 py-2 border-b border-navigation">

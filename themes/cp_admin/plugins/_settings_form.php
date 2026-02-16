@@ -1,10 +1,107 @@
-<form method="POST" action="<?= $action ?>" class="flex flex-col max-w-xl gap-4 p-4 sm:p-6 md:p-8 bg-elevated border-3 border-subtle rounded-xl" >
+<form method="POST" action="<?= $action ?>" class="<?= in_array($plugin->getKey(), ['iclic-inc/admin-menu-disabler', 'iclic-inc/podcast-menu-disabler'], true) ? 'flex flex-col w-full gap-4' : 'flex flex-col max-w-xl gap-4 p-4 sm:p-6 md:p-8 bg-elevated border-3 border-subtle rounded-xl' ?>" >
 <?= csrf_field() ?>
 <?php $hasDatetime = false; ?>
 <?php foreach ($fields as $field): ?>
     <?php if ($field->type === 'datetime') {
         $hasDatetime = true;
     } ?>
+    <?php if (
+        in_array($plugin->getKey(), ['iclic-inc/admin-menu-disabler', 'iclic-inc/podcast-menu-disabler'], true)
+        && $field->type === 'group'
+        && $field->key === 'section_role_matrix'
+    ):
+        $isAdminMenuDisabler = $plugin->getKey() === 'iclic-inc/admin-menu-disabler';
+        $isPodcastMenuDisabler = ! $isAdminMenuDisabler;
+        $sectionKeys = [];
+        if ($isAdminMenuDisabler) {
+            helper('admin_menu_disabler');
+            $roleOptions = admin_menu_disabler_get_role_options();
+            $parseRolesFn = 'admin_menu_disabler_parse_roles';
+            $sectionLabelFn = 'admin_menu_disabler_get_section_label';
+        } else {
+            helper('podcast_menu_disabler');
+            $roleOptions = podcast_menu_disabler_get_role_options();
+            $parseRolesFn = 'podcast_menu_disabler_parse_roles';
+            $sectionLabelFn = 'podcast_menu_disabler_get_section_label';
+            $sectionKeys = array_fill_keys(array_keys(podcast_menu_disabler_sections()), true);
+        }
+
+        $matrixValues = get_plugin_setting($plugin->getKey(), $field->key, $context);
+        if (! is_array($matrixValues)) {
+            $matrixValues = [];
+        }
+        $roleOptionIndex = [];
+        foreach ($roleOptions as $roleOption) {
+            if (! isset($roleOption['value']) || ! is_string($roleOption['value'])) {
+                continue;
+            }
+
+            $roleOptionIndex[strtolower($roleOption['value'])] = true;
+        }
+        ?>
+        <div class="rounded-lg bg-elevated border-3 border-subtle">
+            <table class="w-full table-fixed">
+                <thead class="text-xs font-semibold text-left uppercase text-skin-muted">
+                    <tr>
+                        <th class="w-1/3 px-4 py-2"><?= esc(lang('Navigation.pages')) ?></th>
+                        <th class="w-2/3 px-4 py-2"><?= esc(lang('User.form.roles')) ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($field->fields as $subfield):
+                        try {
+                            $subfieldKey = $subfield->key;
+                        } catch (\Throwable) {
+                            continue;
+                        }
+                        if (! is_string($subfieldKey) || $subfieldKey === '') {
+                            continue;
+                        }
+
+                        $isMenuRow = ! $isPodcastMenuDisabler || array_key_exists($subfieldKey, $sectionKeys);
+                        $selectedRoles = $parseRolesFn($matrixValues[$subfieldKey] ?? null);
+                        $rowOptions = $roleOptions;
+                        foreach ($selectedRoles as $selectedRole) {
+                            if (array_key_exists(strtolower($selectedRole), $roleOptionIndex)) {
+                                continue;
+                            }
+
+                            $rowOptions[] = [
+                                'value'       => $selectedRole,
+                                'label'       => $selectedRole,
+                                'description' => 'Custom role',
+                            ];
+                        }
+                        $optionsJson = esc(json_encode($rowOptions));
+                        $valueJson = esc(json_encode($selectedRoles));
+                        ?>
+                        <tr class="border-t border-subtle hover:bg-base <?= $isMenuRow ? 'bg-base' : '' ?>">
+                            <td class="px-4 py-2 align-top">
+                                <div class="<?= $isMenuRow ? 'font-semibold' : 'pl-5 font-medium' ?>">
+                                    <?php if ($isMenuRow): ?>
+                                        <span><?= esc($sectionLabelFn($subfieldKey)) ?></span>
+                                    <?php else: ?>
+                                        <span class="text-skin-muted">-&gt;</span>
+                                        <span><?= esc($sectionLabelFn($subfieldKey)) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2 relative">
+                                <x-Forms.SelectMulti
+                                    name="<?= sprintf('%s[%s]', $field->key, $subfieldKey) ?>"
+                                    value="<?= $valueJson ?>"
+                                    options="<?= $optionsJson ?>"
+                                    data-select-text=""
+                                    class="w-full relative z-20"
+                                />
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php continue; ?>
+    <?php endif; ?>
     <?php if ($field->multiple):
         if ($field->type === 'group'): ?>
             <div class="flex flex-col gap-4" data-field-array="<?= $field->key ?>">
@@ -58,4 +155,3 @@
 
 <x-Button class="self-end mt-4" variant="primary" type="submit"><?= lang('Common.forms.save') ?></x-Button>
 </form>
-

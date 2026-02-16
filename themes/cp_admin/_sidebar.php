@@ -96,7 +96,11 @@ if (auth()->user()->can('podcasts.view')) {
     $navigation['podcasts']['count'] = (new PodcastModel())->countAllResults();
 } else {
     $navigation['podcasts']['count'] = count(get_user_podcasts(auth()->user()));
-} ?>
+}
+
+helper('admin_menu_disabler');
+$navigation = admin_menu_disabler_filter_navigation($navigation);
+?>
 
 
 <?= view('_partials/_nav_menu', [

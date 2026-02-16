@@ -1,0 +1,188 @@
+{
+  "name": "iclic-inc/podcast-menu-disabler",
+  "version": "0.1.0",
+  "minCastopodVersion": "2.0.0-next.3",
+  "description": "Disable podcast admin menus or specific podcast subpages based on roles.",
+  "license": "AGPL-3.0-or-later",
+  "keywords": ["admin", "podcast", "access-control"],
+  "hooks": [],
+  "settings": {
+    "general": {
+      "section_role_matrix": {
+        "type": "group",
+        "label": "Podcast menu access matrix",
+        "hint": "Choose denied roles for entire menus and/or specific podcast subpages.",
+        "fields": {
+          "dashboard": {
+            "type": "select-multiple",
+            "label": "Dashboard",
+            "options": {},
+            "optional": true
+          },
+          "podcast-view": {
+            "type": "select-multiple",
+            "label": "Home",
+            "options": {},
+            "optional": true
+          },
+          "podcast-edit": {
+            "type": "select-multiple",
+            "label": "Edit podcast",
+            "options": {},
+            "optional": true
+          },
+          "podcast-persons-manage": {
+            "type": "select-multiple",
+            "label": "Manage persons",
+            "options": {},
+            "optional": true
+          },
+          "podcast-imports": {
+            "type": "select-multiple",
+            "label": "Podcast imports",
+            "options": {},
+            "optional": true
+          },
+          "podcast-imports-sync": {
+            "type": "select-multiple",
+            "label": "Sync feeds",
+            "options": {},
+            "optional": true
+          },
+          "episodes": {
+            "type": "select-multiple",
+            "label": "Episodes",
+            "options": {},
+            "optional": true
+          },
+          "episode-list": {
+            "type": "select-multiple",
+            "label": "All episodes",
+            "options": {},
+            "optional": true
+          },
+          "episode-create": {
+            "type": "select-multiple",
+            "label": "New episode",
+            "options": {},
+            "optional": true
+          },
+          "plugins": {
+            "type": "select-multiple",
+            "label": "Plugins",
+            "options": {},
+            "optional": true
+          },
+          "analytics": {
+            "type": "select-multiple",
+            "label": "Analytics",
+            "options": {},
+            "optional": true
+          },
+          "podcast-analytics": {
+            "type": "select-multiple",
+            "label": "Audience overview",
+            "options": {},
+            "optional": true
+          },
+          "podcast-analytics-unique-listeners": {
+            "type": "select-multiple",
+            "label": "Unique listeners",
+            "options": {},
+            "optional": true
+          },
+          "podcast-analytics-listening-time": {
+            "type": "select-multiple",
+            "label": "Listening time",
+            "options": {},
+            "optional": true
+          },
+          "podcast-analytics-players": {
+            "type": "select-multiple",
+            "label": "Players",
+            "options": {},
+            "optional": true
+          },
+          "podcast-analytics-locations": {
+            "type": "select-multiple",
+            "label": "Locations",
+            "options": {},
+            "optional": true
+          },
+          "podcast-analytics-time-periods": {
+            "type": "select-multiple",
+            "label": "Time periods",
+            "options": {},
+            "optional": true
+          },
+          "podcast-analytics-webpages": {
+            "type": "select-multiple",
+            "label": "Web pages visits",
+            "options": {},
+            "optional": true
+          },
+          "broadcast": {
+            "type": "select-multiple",
+            "label": "Broadcast",
+            "options": {},
+            "optional": true
+          },
+          "platforms-podcasting": {
+            "type": "select-multiple",
+            "label": "Podcasting apps",
+            "options": {},
+            "optional": true
+          },
+          "platforms-social": {
+            "type": "select-multiple",
+            "label": "Social networks",
+            "options": {},
+            "optional": true
+          },
+          "monetization": {
+            "type": "select-multiple",
+            "label": "Monetization",
+            "options": {},
+            "optional": true
+          },
+          "subscription-list": {
+            "type": "select-multiple",
+            "label": "All subscriptions",
+            "options": {},
+            "optional": true
+          },
+          "subscription-create": {
+            "type": "select-multiple",
+            "label": "Add subscription",
+            "options": {},
+            "optional": true
+          },
+          "platforms-funding": {
+            "type": "select-multiple",
+            "label": "Funding links",
+            "options": {},
+            "optional": true
+          },
+          "contributors": {
+            "type": "select-multiple",
+            "label": "Contributors",
+            "options": {},
+            "optional": true
+          },
+          "contributor-list": {
+            "type": "select-multiple",
+            "label": "All contributors",
+            "options": {},
+            "optional": true
+          },
+          "contributor-add": {
+            "type": "select-multiple",
+            "label": "Add contributor",
+            "options": {},
+            "optional": true
+          }
+        }
+      }
+    }
+  }
+}

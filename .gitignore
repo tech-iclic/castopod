@@ -192,5 +192,18 @@ castopod-*.tar.gz
 # Plugins
 plugins/*
 !plugins/.gitkeep
+!plugins/iclic-inc/
+!plugins/iclic-inc/admin-menu-disabler/
+!plugins/iclic-inc/admin-menu-disabler/**
+!plugins/iclic-inc/podcast-menu-disabler/
+!plugins/iclic-inc/podcast-menu-disabler/**
+!plugins/iclic-inc/public-site-privacy/
+!plugins/iclic-inc/public-site-privacy/**
+!plugins/iclic-inc/keycloak-admin-auth/
+!plugins/iclic-inc/keycloak-admin-auth/**
+!plugins/iclic-inc/superadmin-podcast-contributors/
+!plugins/iclic-inc/superadmin-podcast-contributors/**
+!plugins/iclic-inc/user-identifier-editor/
+!plugins/iclic-inc/user-identifier-editor/**
 writable/plugins.json
 writable/plugins-lock.json

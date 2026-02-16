@@ -1,0 +1,44 @@
+{
+  "name": "iclic-inc/superadmin-podcast-contributors",
+  "version": "0.1.0",
+  "minCastopodVersion": "2.0.0-next.3",
+  "description": "Automatically add all superadmins as contributors to every podcast.",
+  "license": "AGPL-3.0-or-later",
+  "keywords": ["admin", "users", "access-control"],
+  "hooks": [],
+  "settings": {
+    "general": {
+      "podcast_group": {
+        "type": "select",
+        "label": "Podcast role assigned to superadmins",
+        "hint": "Used when a superadmin is missing from a podcast. Existing podcast roles are preserved.",
+        "options": {
+          "admin": {
+            "label": "Admin",
+            "description": "Full podcast permissions"
+          },
+          "editor": {
+            "label": "Editor",
+            "description": "Can edit podcast content"
+          },
+          "author": {
+            "label": "Author",
+            "description": "Can create and edit own content"
+          },
+          "guest": {
+            "label": "Guest",
+            "description": "Read-only access"
+          }
+        },
+        "optional": true
+      },
+      "sync_interval_seconds": {
+        "type": "number",
+        "label": "Sync interval (seconds)",
+        "hint": "Minimum delay between automatic sync checks. Default: 300.",
+        "optional": true,
+        "validationRules": "permit_empty|is_natural_no_zero"
+      }
+    }
+  }
+}

@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Config;
 
+use App\Filters\AdminMenuDisablerFilter;
 use App\Filters\AllowCorsFilter;
+use App\Filters\KeycloakAdminAuthFilter;
+use App\Filters\PublicSitePrivacyFilter;
+use App\Filters\PodcastMenuDisablerFilter;
+use App\Filters\SuperadminPodcastContributorsFilter;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
@@ -119,11 +124,31 @@ class Filters extends BaseConfig
             'session' => [
                 'before' => [config('Admin')->gateway . '*', config('Analytics')->gateway . '*'],
             ],
+            'keycloak-admin-auth' => [
+                'before' => [config('Admin')->gateway . '*', config('Auth')->gateway . '*'],
+            ],
+            'public-site-privacy' => [
+                'before' => ['*'],
+            ],
+            'admin-menu-disabler' => [
+                'before' => [config('Admin')->gateway . '*'],
+            ],
+            'superadmin-podcast-contributors' => [
+                'before' => [config('Admin')->gateway . '*'],
+            ],
+            'podcast-menu-disabler' => [
+                'before' => [config('Admin')->gateway . '*'],
+            ],
             'podcast-unlock' => [
                 'before' => ['*@*/episodes/*'],
             ],
         ];
 
         $this->aliases['permission'] = PermissionFilter::class;
+        $this->aliases['admin-menu-disabler'] = AdminMenuDisablerFilter::class;
+        $this->aliases['keycloak-admin-auth'] = KeycloakAdminAuthFilter::class;
+        $this->aliases['public-site-privacy'] = PublicSitePrivacyFilter::class;
+        $this->aliases['superadmin-podcast-contributors'] = SuperadminPodcastContributorsFilter::class;
+        $this->aliases['podcast-menu-disabler'] = PodcastMenuDisablerFilter::class;
     }
 }

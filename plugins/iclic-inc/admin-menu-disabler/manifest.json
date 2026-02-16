@@ -1,0 +1,68 @@
+{
+  "name": "iclic-inc/admin-menu-disabler",
+  "version": "0.5.0",
+  "minCastopodVersion": "2.0.0-next.3",
+  "description": "Disable complete sections of the Castopod admin area (menu + route access).",
+  "license": "AGPL-3.0-or-later",
+  "keywords": ["productivity", "admin", "access-control"],
+  "hooks": [],
+  "settings": {
+    "general": {
+      "section_role_matrix": {
+        "type": "group",
+        "label": "Access matrix (pages x denied roles)",
+        "hint": "For each page, list roles that must not access it. Leave empty to allow access.",
+        "fields": {
+          "dashboard": {
+            "type": "select-multiple",
+            "label": "Dashboard",
+            "options": {},
+            "optional": true
+          },
+          "podcasts": {
+            "type": "select-multiple",
+            "label": "Podcasts",
+            "options": {},
+            "optional": true
+          },
+          "plugins": {
+            "type": "select-multiple",
+            "label": "Plugins",
+            "options": {},
+            "optional": true
+          },
+          "persons": {
+            "type": "select-multiple",
+            "label": "Intervenants",
+            "options": {},
+            "optional": true
+          },
+          "fediverse": {
+            "type": "select-multiple",
+            "label": "Fediverse",
+            "options": {},
+            "optional": true
+          },
+          "users": {
+            "type": "select-multiple",
+            "label": "Users",
+            "options": {},
+            "optional": true
+          },
+          "pages": {
+            "type": "select-multiple",
+            "label": "Pages",
+            "options": {},
+            "optional": true
+          },
+          "settings": {
+            "type": "select-multiple",
+            "label": "Settings",
+            "options": {},
+            "optional": true
+          }
+        }
+      }
+    }
+  }
+}
