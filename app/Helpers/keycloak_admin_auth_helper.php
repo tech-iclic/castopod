@@ -1031,20 +1031,33 @@ if (! function_exists('keycloak_admin_auth_extract_username_candidate')) {
      */
     function keycloak_admin_auth_extract_username_candidate(array $claims, string $email): string
     {
-        $candidates = [
-            $claims['preferred_username'] ?? null,
-            $claims['username'] ?? null,
-            $claims['name'] ?? null,
+        $candidates = [];
+
+        $namePairs = [
+            ['given_name', 'family_name'],
+            ['firstName', 'lastName'],
+            ['first_name', 'last_name'],
         ];
 
-        $givenName = $claims['given_name'] ?? null;
-        $familyName = $claims['family_name'] ?? null;
-        if (is_scalar($givenName) || is_scalar($familyName)) {
-            $fullName = trim((string) $givenName . ' ' . (string) $familyName);
+        foreach ($namePairs as [$firstNameKey, $lastNameKey]) {
+            $firstName = $claims[$firstNameKey] ?? null;
+            $lastName = $claims[$lastNameKey] ?? null;
+
+            if (! is_scalar($firstName) && ! is_scalar($lastName)) {
+                continue;
+            }
+
+            $fullName = trim((string) $firstName . ' ' . (string) $lastName);
             if ($fullName !== '') {
                 $candidates[] = $fullName;
             }
         }
+
+        $candidates = array_merge($candidates, [
+            $claims['name'] ?? null,
+            $claims['preferred_username'] ?? null,
+            $claims['username'] ?? null,
+        ]);
 
         foreach ($candidates as $candidate) {
             if (! is_scalar($candidate)) {
