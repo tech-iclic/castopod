@@ -35,7 +35,12 @@ class Select extends FormComponent
         $options = '';
         $selected = $this->getValue();
         foreach ($this->options as $option) {
-            $options .= '<option ' . (array_key_exists('description', $option) ? 'data-label-description="' . $option['description'] . '" ' : '') . 'value="' . $option['value'] . '"' . ($option['value'] === $selected ? ' selected' : '') . '>' . $option['label'] . '</option>';
+            $optionValue = $option['value'] ?? '';
+            $isSelected = is_scalar($optionValue)
+                && is_scalar($selected)
+                && (string) $optionValue === (string) $selected;
+
+            $options .= '<option ' . (array_key_exists('description', $option) ? 'data-label-description="' . $option['description'] . '" ' : '') . 'value="' . $optionValue . '"' . ($isSelected ? ' selected' : '') . '>' . $option['label'] . '</option>';
         }
 
         $this->attributes['name'] = $this->name;

@@ -39,8 +39,18 @@ class SelectMulti extends FormComponent
 
         $options = '';
         $selected = $this->getValue();
+        $normalizedSelected = [];
+        foreach ($selected as $selectedOption) {
+            if (is_scalar($selectedOption)) {
+                $normalizedSelected[] = (string) $selectedOption;
+            }
+        }
+
         foreach ($this->options as $option) {
-            $options .= '<option ' . (array_key_exists('description', $option) ? 'data-label-description="' . $option['description'] . '" ' : '') . 'value="' . $option['value'] . '"' . (in_array($option['value'], $selected, true) ? ' selected' : '') . '>' . $option['label'] . '</option>';
+            $optionValue = $option['value'] ?? '';
+            $isSelected = is_scalar($optionValue) && in_array((string) $optionValue, $normalizedSelected, true);
+
+            $options .= '<option ' . (array_key_exists('description', $option) ? 'data-label-description="' . $option['description'] . '" ' : '') . 'value="' . $optionValue . '"' . ($isSelected ? ' selected' : '') . '>' . $option['label'] . '</option>';
         }
 
         $this->attributes['name'] = $this->name . '[]';
