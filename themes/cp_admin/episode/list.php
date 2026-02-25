@@ -103,16 +103,26 @@
         [
             'header' => lang('Episode.list.actions'),
             'cell'   => function ($episode, $podcast) {
+                $clipboardTargetId = 'episode-audio-url-' . $episode->id;
+                $copyAudioLinkLabel = 'Copier le lien du fichier audio';
+                $copyAudioLinkMarkup = esc(<<<HTML
+                    <div class="flex items-center">
+                        <input id="{$clipboardTargetId}" type="text" readonly value="{$episode->audio_url}" class="absolute w-px h-px p-0 m-0 -z-10 opacity-0" tabindex="-1" aria-hidden="true" />
+                        <button type="button" class="inline-flex items-center w-full gap-x-1 px-4 py-1 hover:bg-highlight text-left" data-type="clipboard-copy" data-clipboard-target="{$clipboardTargetId}">
+                            {$copyAudioLinkLabel}
+                        </button>
+                    </div>
+                HTML);
+
                 $items = [
-                    [
-                        'type'  => 'link',
-                        'title' => lang('Episode.go_to_page'),
-                        'uri'   => route_to('episode', esc($podcast->handle), esc($episode->slug)),
-                    ],
                     [
                         'type'  => 'link',
                         'title' => lang('Episode.edit'),
                         'uri'   => route_to('episode-edit', $podcast->id, $episode->id),
+                    ],
+                    [
+                        'type'    => 'html',
+                        'content' => $copyAudioLinkMarkup,
                     ],
                     [
                         'type'  => 'link',
