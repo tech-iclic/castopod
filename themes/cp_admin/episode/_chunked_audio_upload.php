@@ -20,6 +20,24 @@ $payload = [
     'threshold'    => $thresholdBytes,
     'maxFileSize'  => $maxFileSizeBytes,
     'sessionId'    => $sessionId,
+    'messages'     => [
+        'preparing'    => 'Préparation du fichier…',
+        'starting'     => 'Démarrage de l’envoi…',
+        'uploading'    => 'Envoi du fichier en cours…',
+        'completed'    => 'Fichier envoyé. Enregistrement en cours…',
+        'submitLocked' => 'Envoi en cours…',
+        'maxSize'      => 'Fichier trop volumineux. Taille maximale : %s MB.',
+        'apiError'     => 'Impossible de poursuivre l’envoi pour le moment.',
+        'networkError' => 'Échec de l’envoi. Vérifiez votre connexion et réessayez.',
+        'aborted'      => 'L’envoi a été interrompu.',
+        'partFailed'   => 'Échec de l’envoi du fichier.',
+        'storageError' => 'Le serveur de stockage a refusé l’envoi.',
+        'retryFailed'  => 'Impossible de terminer l’envoi. Réessayez.',
+        'startFailed'  => 'Impossible de démarrer l’envoi du fichier.',
+        'sessionError' => 'Impossible de préparer l’envoi du fichier.',
+        'signError'    => 'Impossible de continuer l’envoi. Réessayez.',
+        'failed'       => 'L’envoi du fichier a échoué.',
+    ],
     'pluginActive' => true,
 ];
 ?>
@@ -32,17 +50,20 @@ $payload = [
 />
 
 <div
-    class="flex flex-col p-3 mt-2 border rounded-md gap-y-2 border-subtle bg-base"
+    class="flex flex-col p-3 border rounded-md gap-y-2 border-subtle bg-base"
     data-chunked-audio-root
     data-chunked-audio-config="<?= esc((string) json_encode($payload)) ?>"
 >
     <p class="text-xs text-skin-muted">
-        Large files use resumable chunked upload automatically above <?= esc(formatBytes($thresholdBytes, true)) ?>.
+        Pour les gros fichiers audio (plus de <?= esc(formatBytes($thresholdBytes, true)) ?>), l’envoi se fait automatiquement.
+    </p>
+    <p class="text-xs text-skin-muted">
+        Pendant l’envoi, le bouton d’enregistrement est temporairement bloqué.
     </p>
 
     <div class="hidden text-xs text-skin-muted" data-chunked-audio-progress-wrap>
         <div class="flex items-center justify-between mb-1">
-            <span data-chunked-audio-progress-label>Preparing upload…</span>
+            <span data-chunked-audio-progress-label>Préparation du fichier…</span>
             <span data-chunked-audio-progress-value>0%</span>
         </div>
         <progress class="w-full h-2" max="100" value="0" data-chunked-audio-progress></progress>
@@ -87,8 +108,36 @@ $payload = [
     return;
   }
 
+  const defaultMessages = {
+    preparing: 'Préparation du fichier…',
+    starting: 'Démarrage de l’envoi…',
+    uploading: 'Envoi du fichier en cours…',
+    completed: 'Fichier envoyé. Enregistrement en cours…',
+    submitLocked: 'Envoi en cours…',
+    maxSize: 'Fichier trop volumineux. Taille maximale : %s MB.',
+    apiError: 'Impossible de poursuivre l’envoi pour le moment.',
+    networkError: 'Échec de l’envoi. Vérifiez votre connexion et réessayez.',
+    aborted: 'L’envoi a été interrompu.',
+    partFailed: 'Échec de l’envoi du fichier.',
+    storageError: 'Le serveur de stockage a refusé l’envoi.',
+    retryFailed: 'Impossible de terminer l’envoi. Réessayez.',
+    startFailed: 'Impossible de démarrer l’envoi du fichier.',
+    sessionError: 'Impossible de préparer l’envoi du fichier.',
+    signError: 'Impossible de continuer l’envoi. Réessayez.',
+    failed: 'L’envoi du fichier a échoué.',
+  };
+  const messages = Object.assign({}, defaultMessages, config.messages || {});
   const storageKey = `castopod:chunked-audio:${config.podcastId}`;
   let isUploading = false;
+  const submitControls = Array.from(document.querySelectorAll('button[type="submit"], input[type="submit"]'))
+    .filter((control) => {
+      const formAttr = control.getAttribute('form');
+      if (formAttr) {
+        return form.id !== '' && formAttr === form.id;
+      }
+
+      return control.closest('form') === form;
+    });
 
   function setError(message) {
     if (!message) {
@@ -106,7 +155,7 @@ $payload = [
       progressWrap.classList.add('hidden');
       progressBar.value = 0;
       progressValue.textContent = '0%';
-      progressLabel.textContent = 'Preparing upload…';
+      progressLabel.textContent = messages.preparing;
       return;
     }
 
@@ -116,6 +165,52 @@ $payload = [
     if (label) {
       progressLabel.textContent = label;
     }
+  }
+
+  function setSubmitControlsLocked(locked) {
+    submitControls.forEach((control) => {
+      if (!('dataset' in control)) {
+        return;
+      }
+
+      if (typeof control.dataset.chunkedOriginalDisabled === 'undefined') {
+        control.dataset.chunkedOriginalDisabled = control.disabled ? '1' : '0';
+      }
+
+      if (locked) {
+        if (control instanceof HTMLButtonElement) {
+          if (typeof control.dataset.chunkedOriginalLabel === 'undefined') {
+            control.dataset.chunkedOriginalLabel = control.innerHTML;
+          }
+          control.textContent = messages.submitLocked;
+        } else if (control instanceof HTMLInputElement && control.type === 'submit') {
+          if (typeof control.dataset.chunkedOriginalValue === 'undefined') {
+            control.dataset.chunkedOriginalValue = control.value;
+          }
+          control.value = messages.submitLocked;
+        }
+
+        control.disabled = true;
+        control.classList.add('opacity-70', 'cursor-not-allowed');
+        control.setAttribute('aria-disabled', 'true');
+        return;
+      }
+
+      const wasDisabled = control.dataset.chunkedOriginalDisabled === '1';
+      control.disabled = wasDisabled;
+      control.classList.remove('opacity-70', 'cursor-not-allowed');
+      control.setAttribute('aria-disabled', wasDisabled ? 'true' : 'false');
+
+      if (control instanceof HTMLButtonElement && typeof control.dataset.chunkedOriginalLabel !== 'undefined') {
+        control.innerHTML = control.dataset.chunkedOriginalLabel;
+      } else if (
+        control instanceof HTMLInputElement &&
+        control.type === 'submit' &&
+        typeof control.dataset.chunkedOriginalValue !== 'undefined'
+      ) {
+        control.value = control.dataset.chunkedOriginalValue;
+      }
+    });
   }
 
   function isChunkedCandidate(file) {
@@ -184,7 +279,7 @@ $payload = [
     const body = isJson ? await response.json() : null;
 
     if (!response.ok) {
-      const message = (body && body.error) ? body.error : `Upload API error (${response.status})`;
+      const message = (body && body.error) ? body.error : messages.apiError;
       throw new Error(message);
     }
 
@@ -202,12 +297,12 @@ $payload = [
         }
       };
 
-      xhr.onerror = () => reject(new Error('Part upload network error'));
-      xhr.onabort = () => reject(new Error('Part upload aborted'));
+      xhr.onerror = () => reject(new Error(messages.networkError));
+      xhr.onabort = () => reject(new Error(messages.aborted));
 
       xhr.onload = () => {
         if (xhr.status < 200 || xhr.status >= 300) {
-          reject(new Error(`Part upload failed (${xhr.status})`));
+          reject(new Error(messages.partFailed));
           return;
         }
 
@@ -215,7 +310,7 @@ $payload = [
         const etag = etagRaw ? etagRaw.replace(/\"/g, '').trim() : '';
 
         if (!etag) {
-          reject(new Error('Missing ETag in S3 response. Check bucket CORS ExposeHeaders.'));
+          reject(new Error(messages.storageError));
           return;
         }
 
@@ -243,7 +338,7 @@ $payload = [
       }
     }
 
-    throw new Error('Upload retry loop failed unexpectedly');
+    throw new Error(messages.retryFailed);
   }
 
   async function uploadChunkedAudio(file) {
@@ -260,7 +355,7 @@ $payload = [
     const session = await apiCall('POST', `${config.baseApiUrl}/start`, startPayload);
     const sessionId = String(session.sessionId || '').trim();
     if (!sessionId) {
-      throw new Error('Upload session initialization failed.');
+      throw new Error(messages.startFailed);
     }
 
     storeSession(fingerprint, sessionId);
@@ -274,7 +369,7 @@ $payload = [
     const partSize = Number(session.partSize || 0);
     const partCount = Number(session.partCount || 0);
     if (!partSize || !partCount) {
-      throw new Error('Invalid multipart session details.');
+      throw new Error(messages.sessionError);
     }
 
     const uploadedParts = Array.isArray(session.uploadedParts) ? session.uploadedParts : [];
@@ -327,26 +422,26 @@ $payload = [
           const signData = await apiCall('POST', `${config.baseApiUrl}/${sessionId}/sign`, { partNumber });
           const url = signData && signData.urls ? signData.urls[String(partNumber)] || signData.urls[partNumber] : '';
           if (!url) {
-            throw new Error(`Missing signed URL for part ${partNumber}.`);
+            throw new Error(messages.signError);
           }
 
           inflightProgress.set(partNumber, 0);
-          refreshProgress(`Uploading part ${partNumber}/${partCount}…`);
+          refreshProgress(messages.uploading);
 
           const etag = await uploadPartWithProgress(url, blob, (loaded) => {
             inflightProgress.set(partNumber, loaded);
-            refreshProgress(`Uploading part ${partNumber}/${partCount}…`);
+            refreshProgress(messages.uploading);
           });
 
           inflightProgress.delete(partNumber);
           committedBytes += blob.size;
           completedEtags.set(partNumber, etag);
-          refreshProgress(`Uploaded part ${partNumber}/${partCount}.`);
+          refreshProgress(messages.uploading);
         });
       }
     }
 
-    setProgress(true, (committedBytes / file.size) * 100, 'Starting multipart upload…');
+    setProgress(true, (committedBytes / file.size) * 100, messages.starting);
 
     const workers = [];
     for (let i = 0; i < concurrency; i += 1) {
@@ -364,7 +459,7 @@ $payload = [
 
     sessionInput.value = sessionId;
     audioInput.value = '';
-    setProgress(true, 100, 'Chunked upload complete. Submitting episode form…');
+    setProgress(true, 100, messages.completed);
   }
 
   audioInput.addEventListener('change', () => {
@@ -397,7 +492,8 @@ $payload = [
 
     if (file.size > Number(config.maxFileSize || 0)) {
       event.preventDefault();
-      setError(`File too large. Maximum allowed is ${(Number(config.maxFileSize || 0) / (1024 * 1024)).toFixed(0)} MB.`);
+      const maxSizeLabel = (Number(config.maxFileSize || 0) / (1024 * 1024)).toFixed(0);
+      setError(messages.maxSize.replace('%s', maxSizeLabel));
       return;
     }
 
@@ -407,13 +503,15 @@ $payload = [
 
     event.preventDefault();
     isUploading = true;
+    setSubmitControlsLocked(true);
 
     try {
       await uploadChunkedAudio(file);
       form.submit();
     } catch (error) {
       setProgress(false);
-      setError(error instanceof Error ? error.message : 'Chunked upload failed.');
+      setError(error instanceof Error ? error.message : messages.failed);
+      setSubmitControlsLocked(false);
     } finally {
       isUploading = false;
     }
