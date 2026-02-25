@@ -247,7 +247,7 @@ if (! function_exists('chunked_audio_upload_normalize_session_id')) {
 if (! function_exists('chunked_audio_upload_cache_key')) {
     function chunked_audio_upload_cache_key(string $sessionId): string
     {
-        return 'chunked-audio-upload:session:' . $sessionId;
+        return 'chunked_audio_upload_session_' . $sessionId;
     }
 }
 
