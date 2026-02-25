@@ -1,0 +1,62 @@
+{
+  "name": "iclic-inc/chunked-audio-upload",
+  "version": "1.0.0",
+  "minCastopodVersion": "2.0.0-next.3",
+  "description": "Resumable multipart upload for large episode audio files using direct browser-to-S3 chunk uploads.",
+  "license": "AGPL-3.0-or-later",
+  "keywords": ["productivity", "podcasting2"],
+  "hooks": [],
+  "settings": {
+    "general": {
+      "max_file_size_mb": {
+        "type": "number",
+        "label": "Maximum audio file size (MB)",
+        "hint": "Upper bound accepted by the chunked upload API.",
+        "defaultValue": 2048,
+        "optional": true
+      },
+      "chunked_threshold_mb": {
+        "type": "number",
+        "label": "Chunked upload threshold (MB)",
+        "hint": "Files above this size use multipart upload automatically.",
+        "defaultValue": 90,
+        "optional": true
+      },
+      "chunk_size_mb": {
+        "type": "number",
+        "label": "Part size (MB)",
+        "hint": "Each multipart chunk size. S3 requires at least 5 MB (except last chunk).",
+        "defaultValue": 16,
+        "optional": true
+      },
+      "parallel_uploads": {
+        "type": "number",
+        "label": "Parallel uploads",
+        "hint": "Number of chunks uploaded concurrently.",
+        "defaultValue": 4,
+        "optional": true
+      },
+      "presigned_url_ttl_seconds": {
+        "type": "number",
+        "label": "Presigned URL TTL (seconds)",
+        "hint": "Validity duration for signed upload-part URLs.",
+        "defaultValue": 900,
+        "optional": true
+      },
+      "session_ttl_minutes": {
+        "type": "number",
+        "label": "Upload session TTL (minutes)",
+        "hint": "Resumable upload metadata retention time.",
+        "defaultValue": 720,
+        "optional": true
+      },
+      "temp_key_prefix": {
+        "type": "text",
+        "label": "Temporary object key prefix",
+        "hint": "S3 prefix used for temporary multipart objects before episode save.",
+        "defaultValue": "tmp/chunked-audio",
+        "optional": true
+      }
+    }
+  }
+}

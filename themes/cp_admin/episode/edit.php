@@ -27,6 +27,8 @@
     data-max-size="<?= file_upload_max_size() ?>"
     data-max-size-error="<?= lang('Episode.form.file_size_error', [formatBytes(file_upload_max_size(), true)]) ?>" />
 
+<?= $this->include('episode/_chunked_audio_upload') ?>
+
 <x-Forms.Field
     name="cover"
     label="<?= esc(lang('Episode.form.cover')) ?>"

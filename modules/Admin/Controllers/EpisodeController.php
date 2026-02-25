@@ -20,6 +20,7 @@ use App\Models\EpisodeModel;
 use App\Models\PodcastModel;
 use App\Models\PostModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
+use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\I18n\Time;
@@ -145,10 +146,21 @@ class EpisodeController extends BaseController
 
     public function createAction(Podcast $podcast): RedirectResponse
     {
+        helper('chunked_audio_upload');
+
+        $userId = (int) user_id();
+        $chunkedAudioSessionId = chunked_audio_upload_normalize_session_id(
+            $this->request->getPost('chunked_audio_upload_session_id'),
+        );
+        $audioUpload = $this->request->getFile('audio_file');
+        $hasNativeAudioFile = $audioUpload instanceof UploadedFile && $audioUpload->isValid();
+
         $rules = [
             'title'           => 'required',
             'slug'            => 'required|max_length[128]',
-            'audio_file'      => 'uploaded[audio_file]|ext_in[audio_file,mp3,m4a]',
+            'audio_file'      => (! $hasNativeAudioFile && $chunkedAudioSessionId !== '' && chunked_audio_upload_is_enabled())
+                ? 'permit_empty|ext_in[audio_file,mp3,m4a]'
+                : 'uploaded[audio_file]|ext_in[audio_file,mp3,m4a]',
             'cover'           => 'is_image[cover]|ext_in[cover,jpg,jpeg,png]|min_dims[cover,1400,1400]|is_image_ratio[cover,1,1]',
             'transcript_file' => 'ext_in[transcript_file,srt,vtt]',
             'chapters_file'   => 'ext_in[chapters_file,json]|is_json[chapters_file]',
@@ -179,14 +191,46 @@ class EpisodeController extends BaseController
                 ->with('error', lang('Episode.messages.sameSlugError'));
         }
 
+        $audioFile = $this->request->getFile('audio_file');
+        $audioSessionToCleanup = '';
+
+        if (
+            (! $audioFile instanceof UploadedFile || ! $audioFile->isValid())
+            && $chunkedAudioSessionId !== ''
+            && chunked_audio_upload_is_enabled()
+        ) {
+            $chunkedAudioFile = chunked_audio_upload_load_completed_audio_file(
+                $chunkedAudioSessionId,
+                $podcast->id,
+                $userId,
+            );
+
+            if (! $chunkedAudioFile instanceof File) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->with('error', 'Chunked audio upload session is invalid or expired. Please upload the audio file again.');
+            }
+
+            $audioFile = $chunkedAudioFile;
+            $audioSessionToCleanup = $chunkedAudioSessionId;
+        }
+
+        if (! $audioFile instanceof File) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Missing audio file.');
+        }
+
         $newEpisode = new Episode([
-            'created_by'           => user_id(),
-            'updated_by'           => user_id(),
+            'created_by'           => $userId,
+            'updated_by'           => $userId,
             'podcast_id'           => $podcast->id,
             'title'                => $this->request->getPost('title'),
             'slug'                 => $this->request->getPost('slug'),
             'guid'                 => null,
-            'audio'                => $this->request->getFile('audio_file'),
+            'audio'                => $audioFile,
             'cover'                => $this->request->getFile('cover'),
             'description_markdown' => $this->request->getPost('description'),
             'location'             => $this->request->getPost('location_name') === '' ? null : new Location(
@@ -235,6 +279,10 @@ class EpisodeController extends BaseController
                 ->with('errors', $episodeModel->errors());
         }
 
+        if ($audioSessionToCleanup !== '') {
+            chunked_audio_upload_cleanup_completed_session($audioSessionToCleanup, $podcast->id, $userId);
+        }
+
         return redirect()->route('episode-view', [$podcast->id, $newEpisodeId])->with(
             'message',
             lang('Episode.messages.createSuccess'),
@@ -260,6 +308,13 @@ class EpisodeController extends BaseController
 
     public function editAction(Episode $episode): RedirectResponse
     {
+        helper('chunked_audio_upload');
+
+        $userId = (int) user_id();
+        $chunkedAudioSessionId = chunked_audio_upload_normalize_session_id(
+            $this->request->getPost('chunked_audio_upload_session_id'),
+        );
+
         $rules = [
             'title'           => 'required',
             'slug'            => 'required|max_length[128]',
@@ -298,8 +353,36 @@ class EpisodeController extends BaseController
         $episode->is_blocked = $this->request->getPost('block') === 'yes';
         $episode->is_premium = $this->request->getPost('premium') === 'yes';
 
-        $episode->updated_by = (int) user_id();
-        $episode->setAudio($this->request->getFile('audio_file'));
+        $episode->updated_by = $userId;
+
+        $audioFile = $this->request->getFile('audio_file');
+        $audioSessionToCleanup = '';
+        if (
+            (! $audioFile instanceof UploadedFile || ! $audioFile->isValid())
+            && $chunkedAudioSessionId !== ''
+            && chunked_audio_upload_is_enabled()
+        ) {
+            $chunkedAudioFile = chunked_audio_upload_load_completed_audio_file(
+                $chunkedAudioSessionId,
+                $episode->podcast_id,
+                $userId,
+            );
+
+            if (! $chunkedAudioFile instanceof File) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->with('error', 'Chunked audio upload session is invalid or expired. Please upload the audio file again.');
+            }
+
+            $audioFile = $chunkedAudioFile;
+            $audioSessionToCleanup = $chunkedAudioSessionId;
+        }
+
+        if ($audioFile instanceof File) {
+            $episode->setAudio($audioFile);
+        }
+
         $episode->setCover($this->request->getFile('cover'));
 
         // republish on websub hubs upon edit
@@ -349,6 +432,14 @@ class EpisodeController extends BaseController
                 ->back()
                 ->withInput()
                 ->with('errors', $episodeModel->errors());
+        }
+
+        if ($audioSessionToCleanup !== '') {
+            chunked_audio_upload_cleanup_completed_session(
+                $audioSessionToCleanup,
+                $episode->podcast_id,
+                $userId,
+            );
         }
 
         return redirect()->route('episode-edit', [$episode->podcast_id, $episode->id])->with(

@@ -251,6 +251,46 @@ $routes->group(
                             'filter' => 'permission:podcast$1.episodes.create',
                         ],
                     );
+                    $routes->post(
+                        'chunked-audio/start',
+                        'ChunkedAudioUploadController::start/$1',
+                        [
+                            'as'     => 'chunked-audio-upload-start',
+                            'filter' => 'permission:podcast$1.episodes.view',
+                        ],
+                    );
+                    $routes->get(
+                        'chunked-audio/(:segment)',
+                        'ChunkedAudioUploadController::status/$1/$2',
+                        [
+                            'as'     => 'chunked-audio-upload-status',
+                            'filter' => 'permission:podcast$1.episodes.view',
+                        ],
+                    );
+                    $routes->post(
+                        'chunked-audio/(:segment)/sign',
+                        'ChunkedAudioUploadController::sign/$1/$2',
+                        [
+                            'as'     => 'chunked-audio-upload-sign',
+                            'filter' => 'permission:podcast$1.episodes.view',
+                        ],
+                    );
+                    $routes->post(
+                        'chunked-audio/(:segment)/complete',
+                        'ChunkedAudioUploadController::complete/$1/$2',
+                        [
+                            'as'     => 'chunked-audio-upload-complete',
+                            'filter' => 'permission:podcast$1.episodes.view',
+                        ],
+                    );
+                    $routes->delete(
+                        'chunked-audio/(:segment)',
+                        'ChunkedAudioUploadController::abort/$1/$2',
+                        [
+                            'as'     => 'chunked-audio-upload-abort',
+                            'filter' => 'permission:podcast$1.episodes.view',
+                        ],
+                    );
                     // Episode
                     $routes->group('(:num)', static function ($routes): void {
                         $routes->get('/', 'EpisodeController::view/$1/$2', [

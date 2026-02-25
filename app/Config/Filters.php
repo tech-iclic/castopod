@@ -120,6 +120,17 @@ class Filters extends BaseConfig
     {
         parent::__construct();
 
+        $adminGateway = trim(config('Admin')->gateway, '/');
+        $chunkedUploadPathPattern = $adminGateway . '/podcasts/*/episodes/chunked-audio*';
+
+        if (
+            isset($this->globals['before']['csrf']['except'])
+            && is_array($this->globals['before']['csrf']['except'])
+            && ! in_array($chunkedUploadPathPattern, $this->globals['before']['csrf']['except'], true)
+        ) {
+            $this->globals['before']['csrf']['except'][] = $chunkedUploadPathPattern;
+        }
+
         $this->filters = [
             'session' => [
                 'before' => [config('Admin')->gateway . '*', config('Analytics')->gateway . '*'],
